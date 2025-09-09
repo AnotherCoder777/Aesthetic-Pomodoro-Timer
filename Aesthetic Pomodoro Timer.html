@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Pomodoro Timer</title>
+
+  <!-- Google Fonts -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=DynaPuff:wght@400;700&family=Orbitron:wght@500;700&family=Roboto+Mono:wght@400;700&family=Poppins:wght@400;600&family=Caveat:wght@400;700&family=Pacifico&family=Press+Start+2P&display=swap"
+    rel="stylesheet">
+
+  <style>
+    *,
+    a,
+    button,
+    input,
+    textarea {
+      cursor: url('cursor.png'), auto !important;
+    }
+
+    *:focus {
+      outline: none !important;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+      text-align: center;
+      color: white;
+      background: url("AE.png") no-repeat center center fixed;
+      transition: background 2s ease;
+      /* smooth transition for background properties */
+      background-size: cover;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Right side panel */
+    .right-panel {
+      position: fixed;
+      top: 50px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 10;
+      width: 220px;
+      font-size: 18px;
+    }
+
+    /* Font selector */
+    .font-settings {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .font-settings label {
+      font-size: 16px;
+      text-align: left;
+    }
+
+    .font-settings select:hover,
+    .font-settings select:focus {
+      background: rgba(0, 0, 0, 0.7);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+      /* keep same bg so it doesn't change */
+    }
+
+
+    .font-settings select {
+      border-radius: 25px;
+      padding: 10px 15px;
+      border: none;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(8px);
+      color: rgba(255, 255, 255, 0.8);
+      font-family: inherit;
+      font-size: 16px;
+      cursor: pointer;
+      appearance: none;
+      transition: all 0.3s;
+    }
+
+    .font-settings select option {
+      background: rgba(0, 0, 0, 0.7);
+      color: rgba(255, 255, 255, 0.8);
+      font-family: inherit;
+    }
+
+    .font-settings select option:checked {
+      color: white;
+      font-weight: bold;
+    }
+
+    /* Gallery toggle button */
+    .gallery-toggle {
+      border-radius: 20px;
+      border: none;
+      padding: 8px;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(6px);
+      color: white;
+      cursor: pointer;
+      transition: 0.3s;
+      font-family: inherit;
+      font-size: 16px;
+    }
+
+    .gallery-toggle:hover {
+      background: rgba(0, 0, 0, 0.7);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Gallery thumbnails (slide animation) */
+    .bg-gallery {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.5s ease, opacity 0.5s ease;
+      opacity: 0;
+    }
+
+    .bg-gallery.show {
+      max-height: none;
+      /* adjust as needed */
+      opacity: 1;
+    }
+
+    .bg-gallery img {
+      width: 70px;
+      height: 70px;
+      object-fit: cover;
+      border-radius: 15px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .bg-gallery img:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Modes buttons */
+    .modes {
+      margin-bottom: 20px;
+    }
+
+    .modes button {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 25px;
+      padding: 10px 20px;
+      margin: 5px;
+      font-size: 16px;
+      font-family: inherit;
+      color: white;
+      cursor: pointer;
+      backdrop-filter: blur(6px);
+      transition: 0.3s;
+    }
+
+    .modes button:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Timer display */
+    .timer {
+      font-family: 'DynaPuff', cursive;
+      font-size: 120px;
+      font-weight: 700;
+      margin: 20px 0;
+      letter-spacing: 4px;
+    }
+
+    /* Controls */
+    .controls button {
+      border-radius: 25px;
+      background: rgba(255, 255, 255, 0.9);
+      border: none;
+      padding: 10px 25px;
+      margin: 10px;
+      font-size: 18px;
+      font-family: inherit;
+      color: black;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .controls button:hover {
+      background: rgba(255, 255, 255, 1);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Custom time select */
+    .settings select {
+      padding: 10px;
+      border-radius: 25px;
+      border: none;
+      font-size: 16px;
+      font-family: inherit;
+      background: rgba(0, 0, 0, 0.5);
+      color: white;
+      cursor: pointer;
+      transition: 0.3s;
+      backdrop-filter: blur(6px);
+    }
+
+    .settings select:hover,
+    .settings select:focus {
+      background: rgba(0, 0, 0, 0.7);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+      /* keep same bg so it doesn't change */
+    }
+
+
+    /* ChatGPT panel */
+    .chat-toggle {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      border-radius: 25px;
+      padding: 10px 20px;
+      background: #3498db;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      transition: 0.3s;
+      z-index: 20;
+    }
+
+    .chat-toggle:hover {
+      background: #2980b9;
+    }
+
+    .chat-panel {
+      position: fixed;
+      bottom: 70px;
+      right: 20px;
+      width: 350px;
+      height: 500px;
+      border-radius: 20px;
+      box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
+      overflow: hidden;
+      transform: translateX(400px);
+      transition: transform 0.4s;
+      z-index: 15;
+    }
+
+    .chat-panel iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      border-radius: 20px;
+    }
+
+    /* Spotify iframe */
+    iframe.spotify {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      border-radius: 12px;
+      box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.7);
+    }
+
+    .spotify-bar iframe {
+      width: 300px;
+      height: 80px;
+      border-radius: 12px;
+      box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.7);
+      transition: height 0.4s ease;
+      /* smooth expand/shrink */
+    }
+
+    .spotify-bar iframe.expanded {
+      height: 380px;
+      /* full playlist view */
+    }
+
+    /* Style for Spotify resize button */
+    .spotify-bar button {
+      margin-top: 8px;
+      border-radius: 25px;
+      padding: 8px 20px;
+      border: none;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(6px);
+      color: white;
+      font-family: inherit;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .spotify-bar button:hover {
+      background: rgba(0, 0, 0, 0.7);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    }
+
+    .playlist-settings {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .playlist-settings label {
+      font-size: 16px;
+      text-align: left;
+    }
+
+    .playlist-settings select {
+      border-radius: 25px;
+      padding: 10px 15px;
+      border: none;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(8px);
+      color: rgba(255, 255, 255, 0.8);
+      font-family: inherit;
+      font-size: 16px;
+      cursor: pointer;
+      appearance: none;
+      transition: all 0.3s;
+    }
+    .playlist-settings select:hover,
+    .playlist-settings select:focus {
+      background: rgba(0, 0, 0, 0.7);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+      /* keep same bg so it doesn't change */
+    }
+
+
+    .playlist-settings select option {
+      background: rgba(0, 0, 0, 0.7);
+      color: rgba(255, 255, 255, 0.8);
+      font-family: inherit;
+    }
+
+    .playlist-settings select option:checked {
+      color: white;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Right Panel -->
+  <div class="right-panel">
+    <div class="font-settings">
+      <select id="fontSelect" onchange="changeFont()">
+        <option value="'DynaPuff', cursive"selected>DynaPuff</option>
+        <option value="'Orbitron', sans-serif">Orbitron</option>
+        <option value="'Roboto Mono', monospace">Roboto Mono</option>
+        <option value="'Poppins', sans-serif" >Poppins</option>
+        <option value="'Caveat', cursive">Caveat</option>
+        <option value="'Pacifico', cursive">Pacifico</option>
+        <option value="'Press Start 2P', cursive">Press Start 2P</option>
+      </select>
+    </div>
+
+    <!-- Where the playlist list will go -->
+    <div class="playlist-settings">
+      <select id="playlistSelect" onchange="changePlaylist()"></select>
+    </div>
+
+    <!-- The single Spotify player -->
+    <div class="spotify-bar">
+      <iframe class="spotify" id="spotifyBar" src="" frameborder="0" allowtransparency="true"
+        allow="encrypted-media"></iframe>
+      <button class="gallery-toggle" onclick="toggleSpotifySize()"
+        style="font-family: Caveat, cursive; width: 220px;">Resize</button>
+    </div>
+    <button class="gallery-toggle" id="modeToggleBtn"
+      style="font-family: Caveat, cursive; width: 220px;">Manual</button>
+    <!-- Gallery toggle button -->
+    <button class="gallery-toggle" onclick="toggleGallery()">Gallery</button>
+
+    <!-- Gallery -->
+    <div class="bg-gallery" id="bgGallery"></div>
+  </div>
+
+  <!-- Modes -->
+  <div class="modes">
+    <button onclick="setMode('pomodoro')">Pomodoro</button>
+    <button onclick="setMode('short')">Short Break</button>
+    <button onclick="setMode('long')">Long Break</button>
+  </div>
+
+  <!-- Timer -->
+  <div class="timer" id="timer">30:00</div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <button onclick="startTimer()">▶ Start</button>
+    <button onclick="resetTimer()">⟳ Reset</button>
+  </div>
+
+  <!-- Custom Time -->
+  <div class="settings">
+    <select id="customTimeSelect" onchange="setCustomTime()">
+      <option value="5">5 min</option>
+      <option value="10">10 min</option>
+      <option value="15">15 min</option>
+      <option value="20">20 min</option>
+      <option value="25">25 min</option>
+      <option value="30" selected>30 min</option>
+      <option value="45">45 min</option>
+      <option value="60">60 min</option>
+    </select>
+  </div>
+
+
+
+  <!-- ChatGPT Panel -->
+  <button class="chat-toggle" onclick="toggleChat()">ChatGPT</button>
+  <div class="chat-panel" id="chatPanel">
+    <iframe src="https://chat.openai.com" frameborder="0"></iframe>
+  </div>
+
+  <script>
+    let timerDisplay = document.getElementById("timer");
+    let customTimeSelect = document.getElementById("customTimeSelect");
+    let fontSelect = document.getElementById("fontSelect");
+    let countdown;
+    let time = 30 * 60;
+    let initialTime = time;
+    let isRunning = false;
+    const startBtn = document.querySelector(".controls button:first-child");
+
+    function updateDisplay() {
+      let minutes = Math.floor(time / 60);
+      let seconds = time % 60;
+      timerDisplay.textContent =
+        `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+    }
+
+    function setMode(mode) {
+      if (mode === "pomodoro") initialTime = 30 * 60;
+      if (mode === "short") initialTime = 5 * 60;
+      if (mode === "long") initialTime = 15 * 60;
+      time = initialTime;
+      updateDisplay();
+      clearInterval(countdown);
+      isRunning = false;
+      startBtn.textContent = "▶ Start";
+    }
+
+    function setCustomTime() {
+      initialTime = customTimeSelect.value * 60;
+      time = initialTime;
+      updateDisplay();
+      clearInterval(countdown);
+      isRunning = false;
+      startBtn.textContent = "▶ Start";
+    }
+
+    function startTimer() {
+      if (!isRunning) {
+        countdown = setInterval(() => {
+          if (time > 0) {
+            time--;
+            updateDisplay();
+          } else {
+            clearInterval(countdown);
+            isRunning = false;
+            startBtn.textContent = "▶ Start";
+            alert("Time’s up!");
+          }
+        }, 1000);
+        isRunning = true;
+        startBtn.textContent = "⏸ Pause";
+      } else {
+        clearInterval(countdown);
+        isRunning = false;
+        startBtn.textContent = "▶ Start";
+      }
+    }
+
+    function resetTimer() {
+      clearInterval(countdown);
+      time = initialTime;
+      updateDisplay();
+      isRunning = false;
+      startBtn.textContent = "▶ Start";
+    }
+
+    function changeFont() {
+      let selectedFont = fontSelect.value;
+      document.querySelector(".timer").style.fontFamily = selectedFont;
+      document.querySelectorAll("button, select").forEach(el => {
+        el.style.fontFamily = selectedFont;
+      });
+    }
+
+    // ChatGPT panel toggle
+    function toggleChat() {
+      const panel = document.getElementById("chatPanel");
+      panel.style.transform = panel.style.transform === "translateX(0px)" ? "translateX(400px)" : "translateX(0px)";
+    }
+
+    // Gallery toggle with slide
+    function toggleGallery() {
+      const gallery = document.getElementById("bgGallery");
+      gallery.classList.toggle("show");
+    }
+
+    // Populate gallery
+    const gallery = document.getElementById("bgGallery");
+    const images = ["AE.png", "img1.jpg", "img2.jpg", "img3.jpg", "img4.jpg", "img5.jpg", "img6.jpg", "img7.jpg"];
+    images.forEach(img => {
+      let el = document.createElement("img");
+      el.src = img;
+      el.onclick = () => { document.body.style.backgroundImage = `url(${img})`; };
+      gallery.appendChild(el);
+    });
+    const playlists = [
+      { name: "Focus Beats", src: "https://open.spotify.com/embed/playlist/5FmmxErJczcrEwIFGIviYo?utm_source=generator" },
+	  { name: "Chill Mix", src: "https://open.spotify.com/embed/playlist/6yVdLHkttWGFvIAU3Wx5Pl?utm_source=generator" }
+    ];
+
+    // Grab the iframe
+    const spotifyBar = document.getElementById("spotifyBar");
+
+    // Grab the container where we will put playlist options
+    const playlistList = document.getElementById("playlistList");
+
+    // Loop through playlists and create <option> items
+    playlists.forEach((pl, index) => {
+      let option = document.createElement("option");
+      option.value = pl.src;        // iframe link
+      option.textContent = pl.name; // shown in dropdown
+      playlistSelect.appendChild(option);
+
+      // Set default to first playlist
+      if (index === 0) spotifyBar.src = pl.src;
+    });
+
+    // When user changes dropdown, update iframe
+    function changePlaylist() {
+      spotifyBar.src = playlistSelect.value;
+    }
+    function toggleSpotifySize() {
+      const bar = document.getElementById("spotifyBar");
+      bar.classList.toggle("expanded");
+    }
+
+    function setupImageModeToggle() {
+      const images = ["AE.png", "img1.jpg", "img2.jpg", "img3.jpg", "img4.jpg", "img5.jpg"];
+      let autoMode = false;
+      let autoInterval = null;
+      let currentIndex = 0;
+
+      const btn = document.getElementById("modeToggleBtn");
+
+      function setBackground(img) {
+        document.body.style.backgroundImage = `url(${img})`;
+      }
+
+      function startAuto() {
+        autoInterval = setInterval(() => {
+          currentIndex = (currentIndex + 1) % images.length;
+          setBackground(images[currentIndex]);
+        }, 15000); // 5 seconds
+      }
+
+      function stopAuto() {
+        clearInterval(autoInterval);
+        autoInterval = null;
+      }
+
+      btn.addEventListener("click", () => {
+        autoMode = !autoMode;
+        if (autoMode) {
+          btn.textContent = "Auto";
+          startAuto();
+        } else {
+          btn.textContent = "Manual";
+          stopAuto();
+        }
+      });
+
+      // start with the first background
+      setBackground(images[0]);
+    }
+    setupImageModeToggle();
+    updateDisplay();
+    changeFont();
+  </script>
+
+</body>
+
+</html>
